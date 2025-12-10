@@ -6,5 +6,6 @@ load_dotenv()
 class Settings:
     PROJECT_NAME: str = os.getenv("APP_NAME", "Fibo Project")
     VERSION: str = os.getenv("API_VERSION", "v1")
-    
+    BRIA_API_KEY: str = os.getenv("BRIA_API_KEY")
+
 settings = Settings()
