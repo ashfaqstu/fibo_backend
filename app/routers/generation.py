@@ -1,29 +1,42 @@
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
-from app.services.multiview_service import multiview_service
+from app.services.image_service import image_service
+from app.services.tripo_service import tripo_service  # <--- NEW IMPORT
 import uuid
 
 router = APIRouter()
 
 class GenerationRequest(BaseModel):
-    prompt: str # e.g. "wooden crate"
+    prompt: str 
 
-@router.post("/generate-views")
-async def generate_multiview_images(request: GenerationRequest):
-    """
-    Trigger the 8-angle generation.
-    Returns a Job ID so the frontend knows where to look later.
-    """
-    # Create a unique ID for this job
+@router.post("/generate-full-pipeline")
+async def generate_pipeline(request: GenerationRequest, background_tasks: BackgroundTasks):
     job_id = str(uuid.uuid4())
     
-    # Run the heavy generation directly (for now)
-    # In a real app, use BackgroundTasks, but let's keep it simple to debug
-    paths = multiview_service.generate_views(request.prompt, job_id)
+    def run_hybrid_pipeline(jid, user_prompt):
+        print(f"\n🚀 STARTING FIBO -> TRIPO PIPELINE (Job {jid})")
+        
+        # 1. FIBO (Phase 1)
+        image_url = image_service.generate_single_image(user_prompt)
+        
+        if not image_url:
+            print("❌ Pipeline Stopped at Phase 1 (Fibo)")
+            return
+
+        # 2. TRIPO (Phase 2)
+        print(f"--- PHASE 2: TRIPO 3D CONVERSION ---")
+        glb_url = tripo_service.generate_3d_model(image_url)
+
+        if glb_url:
+            print(f"\n✨ SUCCESS!")
+            print(f"   🖼️ Input Image: {image_url}")
+            print(f"   📦 Final 3D Model: {glb_url}")
+        else:
+            print("❌ Pipeline Stopped at Phase 2 (Tripo)")
+
+    background_tasks.add_task(run_hybrid_pipeline, job_id, request.prompt)
     
     return {
-        "message": "Views generated successfully",
-        "job_id": job_id,
-        "view_count": len(paths),
-        "local_paths": paths
+        "message": "Hybrid Pipeline started (Fibo -> Tripo).",
+        "job_id": job_id
     }
