@@ -808,6 +808,6 @@ If this project helped you, please ⭐️ star the repository to show your suppo
 
 **Built with ❤️ for the Bria FIBO Hackathon 2025**
 
-[Documentation](https://github.com/yourusername/fibo_backend) • [Report Bug](https://github.com/yourusername/fibo_backend/issues) • [Request Feature](https://github.com/yourusername/fibo_backend/issues)
+
 
 </div>
